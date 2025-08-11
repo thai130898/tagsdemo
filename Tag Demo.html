@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Finder</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            height: 100vh;
+        }
+        #sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #ddd;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        #sidebar h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #5b9bd5;
+            padding-bottom: 10px;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        #upload-btn, #reset-btn {
+            flex: 1;
+            padding: 10px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #upload-btn {
+            background-color: #5b9bd5;
+        }
+        #upload-btn:hover {
+            background-color: #4a8ac9;
+        }
+        #reset-btn {
+            background-color: #6c757d;
+        }
+        #reset-btn:hover {
+            background-color: #5a6268;
+        }
+        #tag-search {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
+        }
+        #processing-message {
+            text-align: center;
+            color: #777;
+            margin-bottom: 10px;
+        }
+        #tag-results-display {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #495057;
+        }
+        #tag-filters {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        /* Style for category headings */
+        .category-header {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1em;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .category-header:first-of-type {
+            margin-top: 5px;
+        }
+        .toggle-icon {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .checkbox-group.collapsed {
+            display: none;
+        }
+        .checkbox-group label {
+            display: block;
+            margin: 8px 0 8px 5px;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        .checkbox-group label:hover {
+            background-color: #e9f2fa;
+        }
+        .checkbox-group input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        #main-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .product-card {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .product-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .product-details {
+            flex-grow: 1;
+        }
+        .product-card h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 1.2em;
+        }
+        .product-type {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .product-card a {
+            color: #5b9bd5;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .product-card a:hover {
+            text-decoration: underline;
+        }
+        .product-card .tags {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #777;
+        }
+        .product-card .tags span {
+            background-color: #eef;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-right: 5px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        .product-image-placeholder {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 14px;
+            text-align: center;
+            margin-left: 20px;
+            flex-shrink: 0;
+        }
+        #no-results {
+            color: #777;
+            font-size: 18px;
+            text-align: center;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <h2>Filter by Tag</h2>
+        <div class="button-container">
+            <button id="upload-btn">Upload Image</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+        <div id="processing-message" style="display: none;">Processing...</div>
+        <div id="tag-results-display" style="display: none;"></div>
+        <input type="text" id="tag-search" placeholder="Search for tags...">
+        <div id="tag-filters">
+            <!-- Checkboxes will be generated here by JavaScript -->
+        </div>
+    </div>
+
+    <div id="main-content">
+        <div id="results">
+            <!-- Product cards will be generated here by JavaScript -->
+        </div>
+        <div id="no-results" style="display: none;">
+            <p>No products match all selected tags.</p>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA SOURCE ---
+        const products = [
+            { id: 201, name: "Women's Pants", styleName: "156F0746", purchaseURL: "#", tags: { customer: ["DSI"], gender: ["female"], type: ["pants"], composition: ["denim"], fabric_pattern: ["solid"], closure: ["zipper"] } },
+            { id: 202, name: "Women's Shirt", styleName: "WI1306 (30871)", purchaseURL: "#", tags: { customer: ["CFL"], gender: ["female"], type: ["shirt"], composition: ["cotton"], fabric_pattern: ["solid"], closure: ["button"], neckline: ["collar"] } },
+            { id: 203, name: "Women's Jacket", styleName: "144J0818", purchaseURL: "#", tags: { customer: ["DSI"], gender: ["female"], type: ["jacket"], composition: ["denim"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
+            { id: 204, name: "Women's Jacket", styleName: "1044426", purchaseURL: "#", tags: { customer: ["ASMARA"], gender: ["female"], type: ["jacket"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
+            { id: 205, name: "Men's Shirt", styleName: "125S2659", purchaseURL: "#", tags: { customer: ["DSI"], gender: ["male"], type: ["shirt"], composition: ["cotton"], fabric_pattern: ["solid"], closure: ["button"], neckline: ["collar"] } },
+            { id: 206, name: "Men's Shirt", styleName: "3KM3", purchaseURL: "#", tags: { customer: ["CFL"], gender: ["male"], type: ["shirt"], composition: ["cotton"], fabric_pattern: ["solid"], closure: ["button"], neckline: ["collar"] } },
+            { id: 207, name: "Women's Jacket", styleName: "1044454", purchaseURL: "#", tags: { customer: ["ASMARA"], gender: ["female"], type: ["jacket"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
+            { id: 208, name: "Skirt", styleName: "CHÂN VÁY", purchaseURL: "#", tags: { customer: ["CANDA"], gender: ["female"], type: ["skirt"], composition: ["cotton"], fabric_pattern: ["solid"], closure: ["pullover"] } },
+            { id: 209, name: "Safety Shorts", styleName: "QUẦN LÓT VÁY", purchaseURL: "#", tags: { customer: ["CANDA"], gender: ["female"], type: ["shorts"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["pullover"] } },
+            { id: 210, name: "Men's Jacket", styleName: "132J0690", purchaseURL: "#", tags: { customer: ["DSI"], gender: ["male"], type: ["jacket"], composition: ["denim"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
+            { id: 211, name: "Men's Jacket", styleName: "3LCK", purchaseURL: "#", tags: { customer: ["CFL"], gender: ["male"], type: ["jacket"], composition: ["denim"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
+            { id: 212, name: "Men's Jacket", styleName: "1044092", purchaseURL: "#", tags: { customer: ["ASMARA"], gender: ["male"], type: ["jacket"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
+            { id: 213, name: "Women's Jumpsuit", styleName: "CD4C1Q90", purchaseURL: "#", tags: { customer: ["CK"], gender: ["female"], type: ["jumpsuit"], composition: ["cotton"], fabric_pattern: ["solid"], closure: ["zipper"] } },
+            { id: 214, name: "Women's Dress", styleName: "CD8C19JL", purchaseURL: "#", tags: { customer: ["CK"], gender: ["female"], type: ["dress"], composition: ["cotton"], fabric_pattern: ["print"], closure: ["pullover"] } },
+            { id: 215, name: "Women's Dress", styleName: "CD9C1B75", purchaseURL: "#", tags: { customer: ["CK"], gender: ["female"], type: ["dress"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["pullover"] } },
+            { id: 216, name: "Women's Jacket", styleName: "1044456", purchaseURL: "#", tags: { customer: ["ASMARA"], gender: ["female"], type: ["jacket"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
+            { id: 217, name: "Women's Jacket", styleName: "1044400", purchaseURL: "#", tags: { customer: ["ASMARA"], gender: ["female"], type: ["jacket"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
+            { id: 218, name: "Men's Shirt", styleName: "3KM4", purchaseURL: "#", tags: { customer: ["CFL"], gender: ["male"], type: ["shirt"], composition: ["cotton"], fabric_pattern: ["solid"], closure: ["button"], neckline: ["collar"] } },
+            { id: 219, name: "Men's Vest", styleName: "99144", purchaseURL: "#", tags: { customer: ["DEWHIRST"], gender: ["male"], type: ["vest"], composition: ["wool"], fabric_pattern: ["solid"], closure: ["button"], neckline: ["v-neck"] } },
+            { id: 220, name: "Men's Vest", styleName: "91907", purchaseURL: "#", tags: { customer: ["DEWHIRST"], gender: ["male"], type: ["vest"], composition: ["wool"], fabric_pattern: ["solid"], closure: ["button"], neckline: ["v-neck"] } }
+        ];
+
+        // --- SCRIPT LOGIC ---
+        const filtersContainer = document.getElementById('tag-filters');
+        const resultsContainer = document.getElementById('results');
+        const noResultsMessage = document.getElementById('no-results');
+        const tagSearchInput = document.getElementById('tag-search');
+        const uploadBtn = document.getElementById('upload-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const processingMessage = document.getElementById('processing-message');
+        const tagResultsDisplay = document.getElementById('tag-results-display');
+
+        uploadBtn.addEventListener('click', processImageUpload);
+        resetBtn.addEventListener('click', resetFilters);
+        tagSearchInput.addEventListener('input', filterTags);
+
+        // Function to clear all selected tags
+        function resetFilters() {
+            const allCheckboxes = filtersContainer.querySelectorAll('input[type="checkbox"]');
+            allCheckboxes.forEach(cb => cb.checked = false);
+            renderProducts();
+        }
+
+        // Function to simulate processing an image and matching tags
+        function processImageUpload() {
+            processingMessage.style.display = 'block';
+            uploadBtn.disabled = true;
+            resetBtn.disabled = true;
+            uploadBtn.style.cursor = 'not-allowed';
+            uploadBtn.style.backgroundColor = '#a0a0a0';
+
+            resetFilters(); // Reset filters before starting
+
+            setTimeout(() => {
+                const fixedFoundTags = ["female", "jacket", "zipper"];
+
+                fixedFoundTags.forEach(tag => {
+                    const checkbox = filtersContainer.querySelector(`input[value="${tag}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                });
+
+                renderProducts();
+
+                processingMessage.style.display = 'none';
+                uploadBtn.disabled = false;
+                resetBtn.disabled = false;
+                uploadBtn.style.cursor = 'pointer';
+                uploadBtn.style.backgroundColor = '#5b9bd5';
+
+            }, 2000); // 2-second delay
+        }
+
+        // Function to filter the visible tag checkboxes
+        function filterTags() {
+            const searchTerm = tagSearchInput.value.toLowerCase();
+            const allLabels = filtersContainer.querySelectorAll('.checkbox-group label');
+
+            allLabels.forEach(label => {
+                const tagText = label.textContent.toLowerCase();
+                if (tagText.includes(searchTerm)) {
+                    label.style.display = 'block';
+                } else {
+                    label.style.display = 'none';
+                }
+            });
+        }
+
+        // Function to update the display of selected tags
+        function updateSelectedTagsDisplay() {
+            const selectedTags = Array.from(filtersContainer.querySelectorAll('input:checked')).map(input => input.value);
+            
+            if (selectedTags.length > 0) {
+                tagResultsDisplay.innerHTML = `<strong>Selected Tags:</strong><br>${selectedTags.join(', ')}`;
+                tagResultsDisplay.style.display = 'block';
+            } else {
+                tagResultsDisplay.style.display = 'none';
+            }
+        }
+
+        // Function to filter and display products based on selected tags
+        function renderProducts() {
+            updateSelectedTagsDisplay(); // Update the tag display every time products are rendered
+
+            const selectedTags = Array.from(filtersContainer.querySelectorAll('input:checked')).map(input => input.value);
+            
+            const filteredProducts = products.filter(product => {
+                const productTags = Object.values(product.tags).flat();
+                return selectedTags.every(tag => productTags.includes(tag));
+            });
+
+            resultsContainer.innerHTML = '';
+
+            if (filteredProducts.length > 0) {
+                noResultsMessage.style.display = 'none';
+                filteredProducts.forEach(product => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    const allProductTags = Object.values(product.tags).flat();
+                    const tagElements = allProductTags.map(tag => `<span>${tag}</span>`).join('');
+                    
+                    card.innerHTML = `
+                        <div class="product-details">
+                            <h3>${product.styleName}</h3>
+                            <p class="product-type">${product.name}</p>
+                            <a href="${product.purchaseURL}" target="_blank">View Pattern</a>
+                            <div class="tags">Tags: ${tagElements}</div>
+                        </div>
+                        <div class="product-image-placeholder">
+                            Image
+                        </div>
+                    `;
+                    resultsContainer.appendChild(card);
+                });
+            } else {
+                noResultsMessage.style.display = 'block';
+            }
+        }
+
+        // Function to create the filter checkboxes from the categorized data
+        function createFilters() {
+            const allTagsCategorized = {}; 
+            products.forEach(product => {
+                for (const category in product.tags) {
+                    if (!allTagsCategorized[category]) {
+                        allTagsCategorized[category] = new Set();
+                    }
+                    product.tags[category].forEach(tag => allTagsCategorized[category].add(tag));
+                }
+            });
+
+            const categoryOrder = ["type", "gender", "customer", "composition", "fabric_pattern", "closure", "neckline"];
+            const categoryDisplayNames = {
+                "type": "Type",
+                "gender": "Gender",
+                "customer": "Customer",
+                "composition": "Composition",
+                "fabric_pattern": "Fabric Pattern",
+                "closure": "Closure",
+                "neckline": "Neckline"
+            };
+
+            for (const category of categoryOrder) {
+                if (!allTagsCategorized[category]) continue;
+
+                const heading = document.createElement('h3');
+                heading.className = 'category-header';
+                heading.innerHTML = `
+                    <span>${categoryDisplayNames[category] || category}</span>
+                    <span class="toggle-icon">-</span>
+                `;
+                
+                const checkboxGroup = document.createElement('div');
+                checkboxGroup.className = 'checkbox-group';
+
+                const sortedTags = Array.from(allTagsCategorized[category]).sort();
+                sortedTags.forEach(tag => {
+                    const label = document.createElement('label');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = tag;
+                    checkbox.addEventListener('change', renderProducts);
+
+                    label.appendChild(checkbox);
+                    label.append(` ${tag}`);
+                    checkboxGroup.appendChild(label);
+                });
+
+                heading.addEventListener('click', () => {
+                    checkboxGroup.classList.toggle('collapsed');
+                    const icon = heading.querySelector('.toggle-icon');
+                    icon.textContent = checkboxGroup.classList.contains('collapsed') ? '+' : '-';
+                });
+
+                filtersContainer.appendChild(heading);
+                filtersContainer.appendChild(checkboxGroup);
+            }
+        }
+
+        // --- INITIAL PAGE LOAD ---
+        createFilters();
+        renderProducts();
+    </script>
+
+</body>
+</html>
