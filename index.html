@@ -199,6 +199,7 @@
             font-size: 14px;
             text-align: center;
             border-radius: 4px;
+            cursor: pointer;
         }
         .product-image-placeholder img {
             width: 100%;
@@ -210,6 +211,26 @@
             font-size: 18px;
             text-align: center;
             margin-top: 50px;
+        }
+        /* Styles for the image preview modal */
+        #image-preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+        }
+        #image-preview-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -238,13 +259,18 @@
         </div>
     </div>
 
+    <!-- Image Preview Modal -->
+    <div id="image-preview-modal">
+        <img id="preview-image" src="" alt="Image Preview">
+    </div>
+
     <script>
         // --- DATA SOURCE ---
         const products = [
-            { id: 301, name: "Áo khoác nữ", styleName: "S261440075", purchaseURL: "https://drive.google.com/file/d/1gVYjlQMl76yUpvXn6uVKcNWl61M6Elhg/view?usp=sharing", imageUrl1: "https://cdn.imgchest.com/files/yxkczk6jbm7.png", imageUrl2: "https://cdn.imgchest.com/files/49zc29qgm6y.png", tags: { type: ["Áo khoác"], gender: ["Nữ"], customer: ["DSI"], closure: ["Dây kéo"], neckline: ["Cổ đức"], sleeve: ["Của tay bo"], front_body: ["Bổ cầu ngực"], back_body: ["Túi 1 cơi"], hem: ["Gấu bo"] } },
-            { id: 302, name: "Quần nam", styleName: "S261280008", purchaseURL: "https://drive.google.com/file/d/1SRvXS2vH9pvcyAZmeilM_ojsq_8atMnY/view?usp=sharing", imageUrl1: "https://cdn.imgchest.com/files/4nec8npwgk4.png", imageUrl2: "https://cdn.imgchest.com/files/7bwckezgaw7.png", tags: { type: ["Quần"], gender: ["Nam"], customer: ["DSI"], closure: ["Không dây kéo"], waistband: ["Thun"], front_pocket: ["Túi chéo"], back_pocket: ["Túi cơi"], hem: ["Gấu lật"] } },
-            { id: 303, name: "Áo khoác nữ", styleName: "144J1147", purchaseURL: "https://drive.google.com/file/d/1dtj9O0fkyIONTwdMgzj5Ldc9UXqIoB0D/view?usp=sharing", imageUrl1: "https://cdn.imgchest.com/files/7pjcqd3xzo7.png", imageUrl2: "https://cdn.imgchest.com/files/7ogcbwm8gvy.png", tags: { type: ["Áo khoác"], gender: ["Nữ"], customer: ["DSI"], closure: ["Dây kéo"], neckline: ["Cổ tàu quai nhê"], sleeve: ["Cửa tay có xẻ khóa"], shoulder: ["Vai ốp"], front_body: ["Thân bổ"], hem: ["Gấu gập kín"] } },
-            { id: 304, name: "Quần nam", styleName: "S261560089", purchaseURL: "https://drive.google.com/file/d/1SRvXS2vH9pvcyAZmeilM_ojsq_8atMnY/view?usp=sharing", imageUrl1: "https://cdn.imgchest.com/files/4nec8npwgk4.png", imageUrl2: "https://cdn.imgchest.com/files/7bwckezgaw7.png", tags: { type: ["Quần"], gender: ["Nam"], customer: ["DSI"], closure: ["Dây kéo"], waistband: ["Cạp liền"], front_pocket: ["Túi chéo"], back_pocket: ["Túi cơi"], hem: ["Gấu giấu mũi"] } }
+            { id: 301, name: "Áo khoác nữ", styleName: "S261440075", purchaseURL: "https://drive.google.com/file/d/1gVYjlQMl76yUpvXn6uVKcNWl61M6Elhg/view?usp=sharing", imageUrl1: "https://cdn.imgchest.com/files/7mmc93dwjq7.png", imageUrl2: "https://cdn.imgchest.com/files/7w6c2zam5py.png", tags: { type: ["Áo khoác"], gender: ["Nữ"], customer: ["DSI"], closure: ["Dây kéo"], neckline: ["Cổ đức"], sleeve: ["Của tay bo"], front_body: ["Bổ cầu ngực"], back_body: ["Túi 1 cơi"], hem: ["Gấu bo"] } },
+            { id: 302, name: "Quần nam", styleName: "S261280008", purchaseURL: "https://drive.google.com/file/d/1SRvXS2vH9pvcyAZmeilM_ojsq_8atMnY/view?usp=sharing", imageUrl1: "https://cdn.imgchest.com/files/ye3c289p6a4.png", imageUrl2: "https://cdn.imgchest.com/files/4z9cvk68rr7.png", tags: { type: ["Quần"], gender: ["Nam"], customer: ["DSI"], closure: ["Không dây kéo"], waistband: ["Thun"], front_pocket: ["Túi chéo"], back_pocket: ["Túi cơi"], hem: ["Gấu lật"] } },
+            { id: 303, name: "Áo khoác nữ", styleName: "144J1147", purchaseURL: "https://drive.google.com/file/d/1dtj9O0fkyIONTwdMgzj5Ldc9UXqIoB0D/view?usp=sharing", imageUrl1: "https://cdn.imgchest.com/files/4gdcxo6ver4.png", imageUrl2: "https://cdn.imgchest.com/files/y8xcn2jlmp4.png", tags: { type: ["Áo khoác"], gender: ["Nữ"], customer: ["DSI"], closure: ["Dây kéo"], neckline: ["Cổ tàu quai nhê"], sleeve: ["Cửa tay có xẻ khóa"], shoulder: ["Vai ốp"], front_body: ["Thân bổ"], hem: ["Gấu gập kín"] } },
+            { id: 304, name: "Quần nam", styleName: "S261560089", purchaseURL: "https://drive.google.com/file/d/1SRvXS2vH9pvcyAZmeilM_ojsq_8atMnY/view?usp=sharing", imageUrl1: "https://cdn.imgchest.com/files/45xcvqrk397.png", imageUrl2: "https://cdn.imgchest.com/files/4apc5wedxv4.png", tags: { type: ["Quần"], gender: ["Nam"], customer: ["DSI"], closure: ["Dây kéo"], waistband: ["Cạp liền"], front_pocket: ["Túi chéo"], back_pocket: ["Túi cơi"], hem: ["Gấu giấu mũi"] } }
         ];
 
         // --- SCRIPT LOGIC ---
@@ -256,10 +282,13 @@
         const resetBtn = document.getElementById('reset-btn');
         const processingMessage = document.getElementById('processing-message');
         const tagResultsDisplay = document.getElementById('tag-results-display');
+        const imagePreviewModal = document.getElementById('image-preview-modal');
+        const previewImage = document.getElementById('preview-image');
 
         uploadBtn.addEventListener('click', processImageUpload);
         resetBtn.addEventListener('click', resetFilters);
         tagSearchInput.addEventListener('input', filterTags);
+        imagePreviewModal.addEventListener('click', () => imagePreviewModal.style.display = 'none'); // Hide modal on click
 
         // Function to clear all selected tags
         function resetFilters() {
@@ -328,7 +357,7 @@
 
         // Function to filter and display products based on selected tags
         function renderProducts() {
-            updateSelectedTagsDisplay(); // Update the tag display every time products are rendered
+            updateSelectedTagsDisplay(); 
 
             const selectedTags = Array.from(filtersContainer.querySelectorAll('input:checked')).map(input => input.value);
             
@@ -363,6 +392,16 @@
                             </div>
                         </div>
                     `;
+
+                    // Add click event listeners to the images
+                    const images = card.querySelectorAll('.product-image-placeholder img');
+                    images.forEach(img => {
+                        img.addEventListener('click', (e) => {
+                            previewImage.src = e.target.src;
+                            imagePreviewModal.style.display = 'flex';
+                        });
+                    });
+
                     resultsContainer.appendChild(card);
                 });
             } else {
@@ -375,7 +414,6 @@
             const allTagsCategorized = {}; 
             products.forEach(product => {
                 for (const category in product.tags) {
-                    // Skip empty tags
                     if(!product.tags[category] || product.tags[category].length === 0 || product.tags[category][0] === '') continue;
 
                     if (!allTagsCategorized[category]) {
@@ -385,7 +423,6 @@
                 }
             });
 
-            // Define the custom order and display names for categories
             const categoryOrder = ["type", "gender", "customer", "closure", "neckline", "sleeve", "shoulder", "front_body", "back_body", "hem", "waistband", "front_pocket", "back_pocket"];
             const categoryDisplayNames = {
                 type: "Loại",
