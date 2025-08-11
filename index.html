@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Finder</title>
+    <title>Trình Tìm Kiếm Sản Phẩm</title>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -140,7 +140,7 @@
             transition: box-shadow 0.3s;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start; /* Aligns items to the top */
         }
         .product-card:hover {
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
@@ -181,18 +181,29 @@
             display: inline-block;
             margin-bottom: 5px;
         }
+        .image-container {
+            display: flex;
+            gap: 15px; /* Increased gap */
+            margin-left: 20px;
+            flex-shrink: 0;
+        }
         .product-image-placeholder {
-            width: 100px;
+            width: 120px; /* Made wider */
             height: 100px;
-            border: 2px dashed #ccc;
+            border: 1px solid #eee; /* Changed to solid for a cleaner look */
+            background-color: #f8f9fa;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #ccc;
             font-size: 14px;
             text-align: center;
-            margin-left: 20px;
-            flex-shrink: 0;
+            border-radius: 4px;
+        }
+        .product-image-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Changed to contain to prevent cropping */
         }
         #no-results {
             color: #777;
@@ -205,14 +216,14 @@
 <body>
 
     <div id="sidebar">
-        <h2>Filter by Tag</h2>
+        <h2>Lọc theo Thẻ</h2>
         <div class="button-container">
-            <button id="upload-btn">Upload Image</button>
-            <button id="reset-btn">Reset</button>
+            <button id="upload-btn">Tải ảnh lên</button>
+            <button id="reset-btn">Thiết lập lại</button>
         </div>
-        <div id="processing-message" style="display: none;">Processing...</div>
+        <div id="processing-message" style="display: none;">Đang xử lý...</div>
         <div id="tag-results-display" style="display: none;"></div>
-        <input type="text" id="tag-search" placeholder="Search for tags...">
+        <input type="text" id="tag-search" placeholder="Tìm kiếm thẻ...">
         <div id="tag-filters">
             <!-- Checkboxes will be generated here by JavaScript -->
         </div>
@@ -223,33 +234,17 @@
             <!-- Product cards will be generated here by JavaScript -->
         </div>
         <div id="no-results" style="display: none;">
-            <p>No products match all selected tags.</p>
+            <p>Không có sản phẩm nào khớp với tất cả các thẻ đã chọn.</p>
         </div>
     </div>
 
     <script>
         // --- DATA SOURCE ---
         const products = [
-            { id: 201, name: "Women's Pants", styleName: "156F0746", purchaseURL: "#", tags: { customer: ["DSI"], gender: ["female"], type: ["pants"], composition: ["denim"], fabric_pattern: ["solid"], closure: ["zipper"] } },
-            { id: 202, name: "Women's Shirt", styleName: "WI1306 (30871)", purchaseURL: "#", tags: { customer: ["CFL"], gender: ["female"], type: ["shirt"], composition: ["cotton"], fabric_pattern: ["solid"], closure: ["button"], neckline: ["collar"] } },
-            { id: 203, name: "Women's Jacket", styleName: "144J0818", purchaseURL: "#", tags: { customer: ["DSI"], gender: ["female"], type: ["jacket"], composition: ["denim"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
-            { id: 204, name: "Women's Jacket", styleName: "1044426", purchaseURL: "#", tags: { customer: ["ASMARA"], gender: ["female"], type: ["jacket"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
-            { id: 205, name: "Men's Shirt", styleName: "125S2659", purchaseURL: "#", tags: { customer: ["DSI"], gender: ["male"], type: ["shirt"], composition: ["cotton"], fabric_pattern: ["solid"], closure: ["button"], neckline: ["collar"] } },
-            { id: 206, name: "Men's Shirt", styleName: "3KM3", purchaseURL: "#", tags: { customer: ["CFL"], gender: ["male"], type: ["shirt"], composition: ["cotton"], fabric_pattern: ["solid"], closure: ["button"], neckline: ["collar"] } },
-            { id: 207, name: "Women's Jacket", styleName: "1044454", purchaseURL: "#", tags: { customer: ["ASMARA"], gender: ["female"], type: ["jacket"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
-            { id: 208, name: "Skirt", styleName: "CHÂN VÁY", purchaseURL: "#", tags: { customer: ["CANDA"], gender: ["female"], type: ["skirt"], composition: ["cotton"], fabric_pattern: ["solid"], closure: ["pullover"] } },
-            { id: 209, name: "Safety Shorts", styleName: "QUẦN LÓT VÁY", purchaseURL: "#", tags: { customer: ["CANDA"], gender: ["female"], type: ["shorts"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["pullover"] } },
-            { id: 210, name: "Men's Jacket", styleName: "132J0690", purchaseURL: "#", tags: { customer: ["DSI"], gender: ["male"], type: ["jacket"], composition: ["denim"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
-            { id: 211, name: "Men's Jacket", styleName: "3LCK", purchaseURL: "#", tags: { customer: ["CFL"], gender: ["male"], type: ["jacket"], composition: ["denim"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
-            { id: 212, name: "Men's Jacket", styleName: "1044092", purchaseURL: "#", tags: { customer: ["ASMARA"], gender: ["male"], type: ["jacket"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
-            { id: 213, name: "Women's Jumpsuit", styleName: "CD4C1Q90", purchaseURL: "#", tags: { customer: ["CK"], gender: ["female"], type: ["jumpsuit"], composition: ["cotton"], fabric_pattern: ["solid"], closure: ["zipper"] } },
-            { id: 214, name: "Women's Dress", styleName: "CD8C19JL", purchaseURL: "#", tags: { customer: ["CK"], gender: ["female"], type: ["dress"], composition: ["cotton"], fabric_pattern: ["print"], closure: ["pullover"] } },
-            { id: 215, name: "Women's Dress", styleName: "CD9C1B75", purchaseURL: "#", tags: { customer: ["CK"], gender: ["female"], type: ["dress"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["pullover"] } },
-            { id: 216, name: "Women's Jacket", styleName: "1044456", purchaseURL: "#", tags: { customer: ["ASMARA"], gender: ["female"], type: ["jacket"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
-            { id: 217, name: "Women's Jacket", styleName: "1044400", purchaseURL: "#", tags: { customer: ["ASMARA"], gender: ["female"], type: ["jacket"], composition: ["synthetic"], fabric_pattern: ["solid"], closure: ["zipper"], neckline: ["collar"] } },
-            { id: 218, name: "Men's Shirt", styleName: "3KM4", purchaseURL: "#", tags: { customer: ["CFL"], gender: ["male"], type: ["shirt"], composition: ["cotton"], fabric_pattern: ["solid"], closure: ["button"], neckline: ["collar"] } },
-            { id: 219, name: "Men's Vest", styleName: "99144", purchaseURL: "#", tags: { customer: ["DEWHIRST"], gender: ["male"], type: ["vest"], composition: ["wool"], fabric_pattern: ["solid"], closure: ["button"], neckline: ["v-neck"] } },
-            { id: 220, name: "Men's Vest", styleName: "91907", purchaseURL: "#", tags: { customer: ["DEWHIRST"], gender: ["male"], type: ["vest"], composition: ["wool"], fabric_pattern: ["solid"], closure: ["button"], neckline: ["v-neck"] } }
+            { id: 301, name: "Áo khoác nữ", styleName: "S261440075", purchaseURL: "https://drive.google.com/file/d/1gVYjlQMl76yUpvXn6uVKcNWl61M6Elhg/view?usp=sharing", imageUrl1: "https://cdn.imgchest.com/files/yxkczk6jbm7.png", imageUrl2: "https://cdn.imgchest.com/files/49zc29qgm6y.png", tags: { type: ["Áo khoác"], gender: ["Nữ"], customer: ["DSI"], closure: ["Dây kéo"], neckline: ["Cổ đức"], sleeve: ["Của tay bo"], front_body: ["Bổ cầu ngực"], back_body: ["Túi 1 cơi"], hem: ["Gấu bo"] } },
+            { id: 302, name: "Quần nam", styleName: "S261280008", purchaseURL: "https://drive.google.com/file/d/1SRvXS2vH9pvcyAZmeilM_ojsq_8atMnY/view?usp=sharing", imageUrl1: "https://cdn.imgchest.com/files/4nec8npwgk4.png", imageUrl2: "https://cdn.imgchest.com/files/7bwckezgaw7.png", tags: { type: ["Quần"], gender: ["Nam"], customer: ["DSI"], closure: ["Không dây kéo"], waistband: ["Thun"], front_pocket: ["Túi chéo"], back_pocket: ["Túi cơi"], hem: ["Gấu lật"] } },
+            { id: 303, name: "Áo khoác nữ", styleName: "144J1147", purchaseURL: "https://drive.google.com/file/d/1dtj9O0fkyIONTwdMgzj5Ldc9UXqIoB0D/view?usp=sharing", imageUrl1: "https://cdn.imgchest.com/files/7pjcqd3xzo7.png", imageUrl2: "https://cdn.imgchest.com/files/7ogcbwm8gvy.png", tags: { type: ["Áo khoác"], gender: ["Nữ"], customer: ["DSI"], closure: ["Dây kéo"], neckline: ["Cổ tàu quai nhê"], sleeve: ["Cửa tay có xẻ khóa"], shoulder: ["Vai ốp"], front_body: ["Thân bổ"], hem: ["Gấu gập kín"] } },
+            { id: 304, name: "Quần nam", styleName: "S261560089", purchaseURL: "https://drive.google.com/file/d/1SRvXS2vH9pvcyAZmeilM_ojsq_8atMnY/view?usp=sharing", imageUrl1: "https://cdn.imgchest.com/files/4nec8npwgk4.png", imageUrl2: "https://cdn.imgchest.com/files/7bwckezgaw7.png", tags: { type: ["Quần"], gender: ["Nam"], customer: ["DSI"], closure: ["Dây kéo"], waistband: ["Cạp liền"], front_pocket: ["Túi chéo"], back_pocket: ["Túi cơi"], hem: ["Gấu giấu mũi"] } }
         ];
 
         // --- SCRIPT LOGIC ---
@@ -284,7 +279,7 @@
             resetFilters(); // Reset filters before starting
 
             setTimeout(() => {
-                const fixedFoundTags = ["female", "jacket", "zipper"];
+                const fixedFoundTags = ["Nữ", "Áo khoác", "Dây kéo"];
 
                 fixedFoundTags.forEach(tag => {
                     const checkbox = filtersContainer.querySelector(`input[value="${tag}"]`);
@@ -324,7 +319,7 @@
             const selectedTags = Array.from(filtersContainer.querySelectorAll('input:checked')).map(input => input.value);
             
             if (selectedTags.length > 0) {
-                tagResultsDisplay.innerHTML = `<strong>Selected Tags:</strong><br>${selectedTags.join(', ')}`;
+                tagResultsDisplay.innerHTML = `<strong>Các thẻ đã chọn:</strong><br>${selectedTags.join(', ')}`;
                 tagResultsDisplay.style.display = 'block';
             } else {
                 tagResultsDisplay.style.display = 'none';
@@ -356,11 +351,16 @@
                         <div class="product-details">
                             <h3>${product.styleName}</h3>
                             <p class="product-type">${product.name}</p>
-                            <a href="${product.purchaseURL}" target="_blank">View Pattern</a>
-                            <div class="tags">Tags: ${tagElements}</div>
+                            <a href="${product.purchaseURL}" target="_blank">Xem Mẫu Rập</a>
+                            <div class="tags">Thẻ: ${tagElements}</div>
                         </div>
-                        <div class="product-image-placeholder">
-                            Image
+                        <div class="image-container">
+                            <div class="product-image-placeholder">
+                                <img src="${product.imageUrl1}" alt="Image 1 for ${product.name}" onerror="this.style.display='none'; this.parentElement.innerText='Ảnh 1 lỗi';">
+                            </div>
+                            <div class="product-image-placeholder">
+                                <img src="${product.imageUrl2}" alt="Image 2 for ${product.name}" onerror="this.style.display='none'; this.parentElement.innerText='Ảnh 2 lỗi';">
+                            </div>
                         </div>
                     `;
                     resultsContainer.appendChild(card);
@@ -375,6 +375,9 @@
             const allTagsCategorized = {}; 
             products.forEach(product => {
                 for (const category in product.tags) {
+                    // Skip empty tags
+                    if(!product.tags[category] || product.tags[category].length === 0 || product.tags[category][0] === '') continue;
+
                     if (!allTagsCategorized[category]) {
                         allTagsCategorized[category] = new Set();
                     }
@@ -382,15 +385,22 @@
                 }
             });
 
-            const categoryOrder = ["type", "gender", "customer", "composition", "fabric_pattern", "closure", "neckline"];
+            // Define the custom order and display names for categories
+            const categoryOrder = ["type", "gender", "customer", "closure", "neckline", "sleeve", "shoulder", "front_body", "back_body", "hem", "waistband", "front_pocket", "back_pocket"];
             const categoryDisplayNames = {
-                "type": "Type",
-                "gender": "Gender",
-                "customer": "Customer",
-                "composition": "Composition",
-                "fabric_pattern": "Fabric Pattern",
-                "closure": "Closure",
-                "neckline": "Neckline"
+                type: "Loại",
+                gender: "Giới tính",
+                customer: "Khách hàng",
+                closure: "Kiểu cài",
+                neckline: "Kiểu cổ",
+                sleeve: "Kiểu tay",
+                shoulder: "Vai",
+                front_body: "Thân trước",
+                back_body: "Thân sau",
+                hem: "Kiểu gấu",
+                waistband: "Kiểu cạp",
+                front_pocket: "Túi trước",
+                back_pocket: "Túi sau"
             };
 
             for (const category of categoryOrder) {
@@ -437,4 +447,3 @@
 
 </body>
 </html>
-
